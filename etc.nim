@@ -163,10 +163,10 @@ proc readFstab*(filename : string = "/etc/fstab"): seq[TEtcFstab] =
     return p
 
 
-proc readMstab*(filename : string = "/etc/mstab"): seq[TEtcFstab] =
-    ## Reads /etc/mstab, or the given file in the same format.
+proc readMtab*(filename : string = "/etc/mtab"): seq[TEtcFstab] =
+    ## Reads /etc/mtab, or the given file in the same format.
     
-    return readFstab("/etc/mstab")
+    return readFstab("/etc/mtab")
 
 
 proc readHosts*(filename : string = "/etc/hosts"): seq[seq[string]] = 
