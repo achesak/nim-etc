@@ -1,0 +1,18 @@
+---- About ----
+
+nimrod-etc is a Nimrod module for reading and parsing configuration files in /etc. Currently it can work with the following files:
+* /etc/passwd
+* /etc/groups
+* /etc/crontab
+* /etc/shells
+* /etc/fstab
+* /etc/mtab
+* /etc/hosts
+
+More may be added in the future if I need them then. :)
+
+See the documentation.html file for usage and more info.
+
+---- License ----
+
+nimrod-etc is released under the MIT open source license.
