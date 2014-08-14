@@ -15,6 +15,8 @@ type TEtcGroup* = tuple[name : string, password : string, passwordEncrypted : bo
 type TEtcCrontab* = tuple[minute : string, hour : string, dayMonth : string, month : string, dayWeek : string, command : string,
                           special : bool, specialValue : string]
 
+type TEtcFstab* = tuple[fileSystem : string, directory : string, fsType: string, options : seq[string], dump : int, pass : int]
+
 
 proc removeBlanks(s : seq[string], length : int): seq[string] = 
     ## Removes all blanks from s and returns a new seq of specified length.
@@ -133,6 +135,32 @@ proc readShells*(filename : string = "/etc/shells"): seq[string] =
     
     return p
 
+
+proc readFstab*(filename : string = "/etc/fstab"): seq[TEtcFstab] = 
+    ## Reads /etc/fstab, or the given file in the same format.
+    
+    var f : string = readFile(filename)
+    var r = f.splitLines()
+    var p = newSeq[string](len(r) - 1)
+    
+    var c : int = 0
+    for i in 0..high(r):
+        if r[i].strip() == "":
+            continue
+        if r[i].unindent().startsWith("#"):
+            continue
+        var s = r[i].split(' ').removeBlanks(6)
+        var row : TEtcFstab
+        row.fileSystem = s[0]
+        row.directory = s[1]
+        row.fsType = s[2]
+        row.options = s[3].split(',')
+        row.dump = parseInt(s[4])
+        row.pass = parseInt(s[5])
+        p[c] = row
+        c += 1
+    
+    return p
 
 
 #################################### ALSO PARSE: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
