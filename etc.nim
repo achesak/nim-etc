@@ -141,7 +141,7 @@ proc readFstab*(filename : string = "/etc/fstab"): seq[TEtcFstab] =
     
     var f : string = readFile(filename)
     var r = f.splitLines()
-    var p = newSeq[string](len(r) - 1)
+    var p = newSeq[TEtcFstab](len(r) - 1)
     
     var c : int = 0
     for i in 0..high(r):
@@ -163,13 +163,27 @@ proc readFstab*(filename : string = "/etc/fstab"): seq[TEtcFstab] =
     return p
 
 
-#################################### ALSO PARSE: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#/etc/hosts
-#/etc/hosts.allow
-#/etc/hosts.deny
-#/etc/fstab
-#/etc/mtab
-#/etc/securetty
-#/etc/networks
-#/etc/protocols
-#/etc/services
+proc readMstab*(filename : string = "/etc/mstab"): seq[TEtcFstab] =
+    ## Reads /etc/mstab, or the given file in the same format.
+    
+    return readFstab("/etc/mstab")
+
+
+proc readHosts*(filename : string = "/etc/hosts"): seq[seq[string]] = 
+    ## Reads /etc/hosts, or the given file in the same format.
+    
+    var f : string = readFile(filename)
+    var r = f.splitLines()
+    var p = newSeq[seq[string]](len(r) - 1)
+    
+    var c : int = 0
+    for i in 0..high(r):
+        if r[i].strip() == "":
+            continue
+        if r[i].unindent().startsWith("#"):
+            continue
+        var s = r[i].split(' ').removeBlanks(3)
+        p[c] = s
+        c += 1
+    
+    return p
