@@ -12,7 +12,8 @@ type TEtcPasswd* = tuple[username : string, password : string, passwordEncrypted
 
 type TEtcGroup* = tuple[name : string, password : string, passwordEncrypted : bool, groupID : int, members : seq[string]]
 
-type TEtcCrontab* = tuple[minute : string, hour : string, dayMonth : string, month : string, dayWeek : string, command : string]
+type TEtcCrontab* = tuple[minute : string, hour : string, dayMonth : string, month : string, dayWeek : string, command : string,
+                          special : bool, specialValue : string]
 
 
 proc removeBlanks(s : seq[string], length : int): seq[string] = 
@@ -91,12 +92,17 @@ proc readCrontab*(filename : string = "/etc/crontab"): seq[TEtcCrontab] =
             continue
         var s = r[i].split(' ').removeBlanks(6)
         var row : TEtcCrontab
-        row.minute = s[0]
-        row.hour = s[1]
-        row.dayMonth = s[2]
-        row.month = s[3]
-        row.dayWeek = s[4]
-        row.command = s[5]
+        if s[0].startsWith("@"):
+            row.special = true
+            row.specialValue = s[0]
+            row.command = s[1]
+        else:
+            row.minute = s[0]
+            row.hour = s[1]
+            row.dayMonth = s[2]
+            row.month = s[3]
+            row.dayWeek = s[4]
+            row.command = s[5]
         p[i] = row
     
     return p
