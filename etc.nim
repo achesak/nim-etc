@@ -72,7 +72,7 @@ proc readGroup*(filename : string = "/etc/group"): seq[TEtcGroup] =
         row.password = s[1]
         row.passwordEncrypted = s[1] == "x"
         row.groupID = parseInt(s[2])
-        row.members = s[3].split(':')
+        row.members = s[3].split(',')
         p[i] = row
     
     return p
@@ -80,11 +80,14 @@ proc readGroup*(filename : string = "/etc/group"): seq[TEtcGroup] =
 
 proc readCrontab*(filename : string = "/etc/crontab"): seq[TEtcCrontab] = 
     ## Reads /etc/crontab, or the given file in the same format.
+    ##
+    ## Returned sequence may be longer than the total number of commands.
     
     var f : string = readFile(filename)
     var r = f.splitLines()
     var p = newSeq[TEtcCrontab](len(r) - 1)
     
+    var c : int = 0
     for i in 0..high(r):
         if r[i].strip() == "":
             continue
@@ -97,16 +100,40 @@ proc readCrontab*(filename : string = "/etc/crontab"): seq[TEtcCrontab] =
             row.specialValue = s[0]
             row.command = s[1]
         else:
+            row.special = false
             row.minute = s[0]
             row.hour = s[1]
             row.dayMonth = s[2]
             row.month = s[3]
             row.dayWeek = s[4]
             row.command = s[5]
-        p[i] = row
+        p[c] = row
+        c += 1
     
     return p
+
+
+proc readShells*(filename : string = "/etc/shells"): seq[string] = 
+    ## Reads /etc/shells, or the given file in the same format.
+    ##
+    ## Returned sequence may be longer than the total number of shells.
     
+    var f : string = readFile(filename)
+    var r = f.splitLines()
+    var p = newSeq[string](len(r) - 1)
+    
+    var c : int = 0
+    for i in 0..high(r):
+        if r[i].strip() == "":
+            continue
+        if r[i].unindent().startsWith("#"):
+            continue
+        p[c] = r[i]
+        c += 1
+    
+    return p
+
+
 
 #################################### ALSO PARSE: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #/etc/hosts
@@ -114,15 +141,7 @@ proc readCrontab*(filename : string = "/etc/crontab"): seq[TEtcCrontab] =
 #/etc/hosts.deny
 #/etc/fstab
 #/etc/mtab
-#/etc/shells
 #/etc/securetty
 #/etc/networks
 #/etc/protocols
 #/etc/services
-
-
-var i = "         this                 is                    a                     test"
-var k = i.split(' ')
-k = removeBlanks(k, 4)
-for i in k:
-    echo(i)
