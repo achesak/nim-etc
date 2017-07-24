@@ -7,15 +7,41 @@
 import strutils
 
 
-type TEtcPasswd* = tuple[username : string, password : string, passwordEncrypted : bool, userID : int, groupID : int,
-                      userInfo : string, homeDirectory : string, shell : string]
+type
+    EtcPasswd* = ref object
+        username* : string
+        password* : string
+        passwordEncrypted* : bool
+        userID* : int
+        groupID* : int
+        userInfo* : string
+        homeDirectory* : string
+        shell* : string
 
-type TEtcGroup* = tuple[name : string, password : string, passwordEncrypted : bool, groupID : int, members : seq[string]]
+    EtcGroup* = ref object
+        name* : string
+        password* : string
+        passwordEncrypted* : bool
+        groupID* : int
+        members* : seq[string]
 
-type TEtcCrontab* = tuple[minute : string, hour : string, dayMonth : string, month : string, dayWeek : string, command : string,
-                          special : bool, specialValue : string]
+    EtcCrontab* = ref object 
+        minute* : string
+        hour* : string
+        dayMonth* : string
+        month* : string
+        dayWeek* : string
+        command* : string
+        special* : bool
+        specialValue* : string
 
-type TEtcFstab* = tuple[fileSystem : string, directory : string, fsType: string, options : seq[string], dump : int, pass : int]
+    EtcFstab* = ref object 
+        fileSystem* : string
+        directory* : string
+        fsType: string
+        options* : seq[string]
+        dump* : int
+        pass* : int
 
 
 proc removeBlanks(s : seq[string], length : int): seq[string] = 
@@ -33,18 +59,18 @@ proc removeBlanks(s : seq[string], length : int): seq[string] =
     return n
 
 
-proc readPasswd*(filename : string = "/etc/passwd"): seq[TEtcPasswd] = 
+proc readPasswd*(filename : string = "/etc/passwd"): seq[EtcPasswd] = 
     ## Reads /etc/passwd, or the given file in the same format.
     
     var f : string = readFile(filename)
     var r = f.splitLines()
-    var p = newSeq[TEtcPasswd](len(r) - 1)
+    var p = newSeq[EtcPasswd](len(r) - 1)
     
     for i in 0..high(r):
         if r[i].strip() == "":
             continue
         var s = r[i].split(':')
-        var row : TEtcPasswd
+        var row : EtcPasswd
         row.username = s[0]
         row.password = s[1]
         row.passwordEncrypted = s[1] == "x"
@@ -58,18 +84,18 @@ proc readPasswd*(filename : string = "/etc/passwd"): seq[TEtcPasswd] =
     return p
 
 
-proc readGroup*(filename : string = "/etc/group"): seq[TEtcGroup] = 
+proc readGroup*(filename : string = "/etc/group"): seq[EtcGroup] = 
     ## Reads /etc/group, or the given file in the same format.
     
     var f : string = readFile(filename)
     var r = f.splitLines()
-    var p = newSeq[TEtcGroup](len(r) - 1)
+    var p = newSeq[EtcGroup](len(r) - 1)
     
     for i in 0..high(r):
         if r[i].strip() == "":
             continue
         var s = r[i].split(':')
-        var row : TEtcGroup
+        var row : EtcGroup
         row.name = s[0]
         row.password = s[1]
         row.passwordEncrypted = s[1] == "x"
@@ -80,14 +106,14 @@ proc readGroup*(filename : string = "/etc/group"): seq[TEtcGroup] =
     return p
 
 
-proc readCrontab*(filename : string = "/etc/crontab"): seq[TEtcCrontab] = 
+proc readCrontab*(filename : string = "/etc/crontab"): seq[EtcCrontab] = 
     ## Reads /etc/crontab, or the given file in the same format.
     ##
     ## Returned sequence may be longer than the total number of commands.
     
     var f : string = readFile(filename)
     var r = f.splitLines()
-    var p = newSeq[TEtcCrontab](len(r) - 1)
+    var p = newSeq[EtcCrontab](len(r) - 1)
     
     var c : int = 0
     for i in 0..high(r):
@@ -96,7 +122,7 @@ proc readCrontab*(filename : string = "/etc/crontab"): seq[TEtcCrontab] =
         if r[i].unindent().startsWith("#"):
             continue
         var s = r[i].split(' ').removeBlanks(6)
-        var row : TEtcCrontab
+        var row : EtcCrontab
         if s[0].startsWith("@"):
             row.special = true
             row.specialValue = s[0]
@@ -136,12 +162,12 @@ proc readShells*(filename : string = "/etc/shells"): seq[string] =
     return p
 
 
-proc readFstab*(filename : string = "/etc/fstab"): seq[TEtcFstab] = 
+proc readFstab*(filename : string = "/etc/fstab"): seq[EtcFstab] = 
     ## Reads /etc/fstab, or the given file in the same format.
     
     var f : string = readFile(filename)
     var r = f.splitLines()
-    var p = newSeq[TEtcFstab](len(r) - 1)
+    var p = newSeq[EtcFstab](len(r) - 1)
     
     var c : int = 0
     for i in 0..high(r):
@@ -150,7 +176,7 @@ proc readFstab*(filename : string = "/etc/fstab"): seq[TEtcFstab] =
         if r[i].unindent().startsWith("#"):
             continue
         var s = r[i].split(' ').removeBlanks(6)
-        var row : TEtcFstab
+        var row : EtcFstab
         row.fileSystem = s[0]
         row.directory = s[1]
         row.fsType = s[2]
@@ -163,7 +189,7 @@ proc readFstab*(filename : string = "/etc/fstab"): seq[TEtcFstab] =
     return p
 
 
-proc readMtab*(filename : string = "/etc/mtab"): seq[TEtcFstab] =
+proc readMtab*(filename : string = "/etc/mtab"): seq[EtcFstab] =
     ## Reads /etc/mtab, or the given file in the same format.
     
     return readFstab("/etc/mtab")
